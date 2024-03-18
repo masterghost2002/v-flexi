@@ -8,12 +8,15 @@ import handleDeleteFolder from './src/delete-from-s3'
 const config = getConfig();
 async function main(){
     try {
+        console.log('Video conversion started');
         const processFilePromises = formats.map(format=>convert(config.inputVideoUrl, format.outputPath, format.resolution));
         const processFilePaths = await Promise.all(processFilePromises);
+        console.log('Uploading to S3');
         const uploadFilePromises = processFilePaths.map(filePath=>upload(filePath));
-        const processedUploadFilePath = await Promise.all(uploadFilePromises);
+        await Promise.all(uploadFilePromises);
+        console.log('Deleting raw video file bucket');
         await Promise.all([handleDeleteFolder()]);
-        console.log(processedUploadFilePath);
+        console.log('File conversionc completed');
 
     } catch (error) {
         console.log(error);
