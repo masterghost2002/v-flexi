@@ -17,7 +17,6 @@ async function main(){
         console.log('Deleting raw video file bucket');
         await Promise.all([handleDeleteFolder()]);
         console.log('File conversionc completed');
-
     } catch (error) {
         console.log(error);
     }finally{
