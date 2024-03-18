@@ -1,39 +1,22 @@
-import ffmpeg from 'fluent-ffmpeg';
-import 'dotenv';
-const filePath = process.env.FILE_PATH!;
-const formats = [{
-    format: '1080p',
-    resolution: '1920x1080',
-    outputPath: 'output_1080p.mp4'
-},
-{
-    format: '720p',
-    resolution: '1280x720',
-    outputPath: 'output_720p.mp4'
-},
-{
-    format: '480p',
-    resolution: '854x480',
-    outputPath: 'output_480p.mp4'
-}
+import dotenv from 'dotenv';
+dotenv.config();
+import getConfig from './src/get-config';
+import formats from './src/formats';
+import convert from './src/convert';
+import upload from './src/upload-s3';
+const config = getConfig();
+async function main(){
+    try {
+        const processFilePromises = formats.map(format=>convert(config.inputVideoUrl, format.outputPath, format.resolution));
+        const processFilePaths = await Promise.all(processFilePromises);
+        const uploadFilePromises = processFilePaths.map(filePath=>upload(filePath));
+        const processedUploadFilePath = await Promise.all(uploadFilePromises);
+        console.log(processedUploadFilePath);
 
-]
-function convert(inputFile: string, outputFile: string, resolution: string) {
-    ffmpeg(inputFile)
-        .output(outputFile)
-        .size(resolution)
-        .on('end', () => {
-            console.log(`Conversion to ${resolution} complete`);
-        })
-        .on('error', (err) => {
-            console.error('Error during conversion:', err);
-        })
-        .run();
-}
-
-function main(){
-    for(const format of formats)
-        convert(filePath, format.outputPath, format.resolution);
+    } catch (error) {
+        console.log(error);
+    }
+    
 }
 main();
 
