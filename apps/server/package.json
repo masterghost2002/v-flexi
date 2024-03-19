@@ -30,7 +30,7 @@
     "@nestjs/platform-express": "^10.3.4",
     "@prisma/client": "5.11.0",
     "argon2": "^0.40.1",
-    "aws-sdk": "^2.1580.0",
+    "aws-sdk": "^2.1579.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv-cli": "^7.4.1",

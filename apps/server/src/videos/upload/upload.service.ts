@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { VIDEOSTATUS } from "@prisma/client";
-import { PrismaService } from "src/prisma/prisma.service";
-import { ECSClient } from '@aws-sdk/client-ecs';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from "@nestjs/config";
 import { FileDto } from "../dto";
-Injectable({});
+import { LaunchType, ECSClient, RunTaskCommand, RunTaskCommandInput } from '@aws-sdk/client-ecs';
+@Injectable()
 export class UploadService {
     constructor(private prisma: PrismaService, private configService: ConfigService) { }
     async handleUpload(file: FileDto, userId: string) {
@@ -18,32 +18,33 @@ export class UploadService {
             await this.createProcessingTask(userId, video.id, file.location, file.key);
             return video;
         } catch (err) {
+            console.log(err);
             throw err;
         }
     }
-    async createProcessingTask(userId: string, videoId: number, videoUrl: string, fileKey:string) {
+    async createProcessingTask(userId: string, videoId: number, videoUrl: string, fileKey: string) {
         const ecs = new ECSClient({
             region: this.configService.get('AWS_ECS_REGION'),
             credentials: {
-                accessKeyId: this.configService.get('AWS_ECS_IAM_ACCESS_KEY_ID='),
-                secretAccessKey: this.configService.get('K9C93a/rHsui1gP5+9o1bqp8F4vEPTqyntrKnG5f')
-            }
-        });
-        const params = {
+                accessKeyId: this.configService.get('AWS_ECS_IAM_ACCESS_KEY_ID'),
+                secretAccessKey: this.configService.get('AWS_ECS_IAM_SECRET_KEY_ID')
+            },
+        })
+        const params:RunTaskCommandInput = {
             cluster: this.configService.get('AWS_ECS_CLUSTER_ACN'),
             taskDefinition: this.configService.get('AWS_ECS_TASK_ACN'),
-            count: 1, // Number of tasks to run
-            launchType: 'FARGATE', // Or 'EC2' depending on your setup
+            count:1,
+            launchType: LaunchType.FARGATE, // Or 'EC2' depending on your setup
             networkConfiguration: {
                 awsvpcConfiguration: {
-                    subnets: ['subnet-00c9f8338003a710a'],
+                    subnets: [this.configService.get('AWS_SUBNET')],
                     assignPublicIp: 'ENABLED'
                 }
             },
             overrides: {
                 containerOverrides: [
                     {
-                        name: 'vflex-transcoder',
+                        name: this.configService.get('CONTAINER_NAME'),
                         environment: [
                             {
                                 name: 'INPUT_VIDEO_URL',
@@ -55,7 +56,7 @@ export class UploadService {
                             },
                             {
                                 name: 'VIDEO_ID',
-                                value: videoId
+                                value: `${videoId}`
                             }, {
                                 name: 'BUCKET_FILE_KEY',
                                 value: fileKey
@@ -86,6 +87,7 @@ export class UploadService {
             }
         };
 
-
+        const task = new RunTaskCommand(params);
+        await ecs.send(task);
     }
 }
