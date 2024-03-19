@@ -4,7 +4,7 @@ import getConfig from './src/get-config';
 import formats from './src/formats';
 import convert from './src/convert';
 import upload from './src/upload-s3';
-import handleDeleteFolder from './src/delete-from-s3'
+import handleDeleteTempVideo from './src/delete-from-s3'
 const config = getConfig();
 async function main(){
     try {
@@ -15,8 +15,8 @@ async function main(){
         const uploadFilePromises = processFilePaths.map(filePath=>upload(filePath));
         await Promise.all(uploadFilePromises);
         console.log('Deleting raw video file bucket');
-        await Promise.all([handleDeleteFolder()]);
-        console.log('File conversionc completed');
+        await Promise.all([handleDeleteTempVideo()]);
+        console.log('File conversion completed');
     } catch (error) {
         console.log(error);
     }finally{

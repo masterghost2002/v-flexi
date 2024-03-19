@@ -1,11 +1,13 @@
-import { Controller, Post, UseGuards } from "@nestjs/common";
-import { JwtGuard } from "src/auth/guard";
-@UseGuards(JwtGuard)
+import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 @Controller('upload')
-export class UploadController{
-    constructor(){}
-    @Post('file')
-    uploadFile(){
-        return 'this is upload'
-    }
-};
+export class UploadController {
+  @Post('file')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    // Logic to handle uploaded file
+    console.log('Uploaded file:', file);
+    return { filename: file.filename };
+  }
+}
