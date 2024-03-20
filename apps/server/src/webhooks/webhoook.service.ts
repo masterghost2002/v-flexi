@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { VIDEOSTATUS } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 type URLSDATA =
     {
@@ -14,7 +15,6 @@ type DATA = {
 export class WebhookService {
     constructor(private prisma: PrismaService) { }
     async handleUpdateVideoResolutionsUrls(videoData: DATA) {
-        console.log(videoData)
         const _1080P_url = videoData.videoUrls.filter(obj=>obj.resolution === '1080p')[0].url;
         const _720P_url = videoData.videoUrls.filter(obj=>obj.resolution === '720p')[0].url;
         const _480P_url = videoData.videoUrls.filter(obj=>obj.resolution === '480p')[0].url;
@@ -23,6 +23,7 @@ export class WebhookService {
                 id: parseInt(videoData.videoId)
             },
             data: {
+                status:VIDEOSTATUS.AVAILABLE,
                 video_1080_mp4: _1080P_url,
                 video_720_mp4: _720P_url,
                 video_480_mp4: _480P_url

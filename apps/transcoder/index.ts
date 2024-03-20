@@ -15,24 +15,26 @@ async function main(){
         console.log('Uploading to S3');
         const uploadFilePromises = processFilePaths.map(data=>upload(data.outputFile, data.resolution));
         const uploadData = await Promise.all(uploadFilePromises);
+        console.log(uploadData);
         const data = {
             userId:config.userId,
             videoId:config.videoId,
             videoUrls:[
                 {
                     resolution:'1080p',
-                    url:uploadData.filter(data=>data.resolution === '1080p')[0]?.url
+                    url:uploadData.filter(data=>data.resolution === '1920x1080')[0]?.url
                 },
                 {
                     resolution:'720p',
-                    url:uploadData.filter(data=>data.resolution === '720p')[0]?.url
+                    url:uploadData.filter(data=>data.resolution === '1280x720')[0]?.url
                 },
                 {
                     resolution:'480p',
-                    url:uploadData.filter(data=>data.resolution === '480p')[0]?.url
+                    url:uploadData.filter(data=>data.resolution === '854x480')[0]?.url
                 }
             ]
         }
+        console.log(data);
         await callWebhook(config.webhookUrl, data);
         console.log('Deleting raw video file bucket');
         await Promise.all([handleDeleteTempVideo()]);
