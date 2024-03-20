@@ -8,7 +8,7 @@ AWS.config.update({
     region:config.region
 });
 const s3 = new AWS.S3;
-const upload= async (filePath:string):Promise<string>  => {
+const upload= async (filePath:string, resolution:string):Promise<{url:string, resolution:string}>  => {
     const fileName = config.userId + '/' + config.videoId + '/' + filePath;
     return new Promise((resolve, _)=>{
         const fileStream = fs.readFileSync(filePath);
@@ -22,7 +22,7 @@ const upload= async (filePath:string):Promise<string>  => {
                 console.log('Error wile uploading', err);
                 process.exit(1);
             }
-            resolve(data.Location as string)
+            resolve({url:data.Location as string, resolution})
         })
     })
 };
