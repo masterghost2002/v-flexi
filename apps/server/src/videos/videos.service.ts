@@ -9,7 +9,11 @@ export class VideosService {
                 id: userId
             },
             include: {
-                videos: true
+                videos:{
+                    orderBy:{
+                        updatedAt:'desc'
+                    }
+                }
             }
         });
         return user.videos;
